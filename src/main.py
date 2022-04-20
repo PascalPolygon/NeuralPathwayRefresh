@@ -4,6 +4,7 @@ from net import Net
 from utils import Utils
 import copy
 import matplotlib.pyplot as plt
+import time
 
 utils = Utils()
 
@@ -68,7 +69,10 @@ if __name__ == '__main__':
     utils.log('net_arch', net_arch)
     net = Net(net_arch, lr=float(opt.lr), maxEpoch=int(opt.max_iter), momentum=float(opt.momentum), verbose=bool(opt.verbose), debug=opt.debug)
     print('Training...')
+    start = time.time()
     net.train(inputs, outputs)
+    end = time.time()
+    print(f'Trained in {(end - start)/1000} ms')
     # for w in net.w:
     #     print(w)
     #     print('-'*50)

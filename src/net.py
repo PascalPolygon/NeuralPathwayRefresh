@@ -225,8 +225,8 @@ class Net():
                 strongest_weight = max(unit_weights[:-1]) #Ignore last weight because it is bias (TODO: thinks about how else you want to handle bias weights - maybe just ignoring them isn't the best for best performance)
                 next_hop_id = unit_weights.index(strongest_weight) 
                 # unit_weights[next_hop_id] += err #update strongest  
-                w_reversed[layer][curr_hop_id][next_hop_id] += self.eta*err*unit_input_activations[next_hop_id] #Try w and w/o unit_input_activation (xji  in T4.5 from the book)
-                # w_reversed[layer][curr_hop_id][next_hop_id] += self.eta*err #Try w and w/o unit_input_activation (xji  in T4.5 from the book)
+                # w_reversed[layer][curr_hop_id][next_hop_id] += self.eta*err*unit_input_activations[next_hop_id] #Try w and w/o unit_input_activation (xji  in T4.5 from the book)
+                w_reversed[layer][curr_hop_id][next_hop_id] += self.eta*err #Try w and w/o unit_input_activation (xji  in T4.5 from the book)
                 curr_hop_id = next_hop_id
         
         w_reversed.reverse() #Reverse back to feedForward order
