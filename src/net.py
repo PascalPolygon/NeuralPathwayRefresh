@@ -6,13 +6,14 @@ import copy
 
 utils = Utils()
 class Net():
-    def __init__(self, n_neurons, lr=0.01, maxEpoch = 100, momentum = 0, verbose=True, debug=False):
+    def __init__(self, n_neurons, lr=0.01, maxEpoch = 100, momentum = 0, verbose=True, debug=False, algorithm='bp'):
         self.n_neurons = n_neurons
         self.verbose = verbose
         self.eta = lr
         self.maxEpoch = maxEpoch
         self.alpha = momentum #Momentum hyper parametere
         self.debug = debug
+        self.algorithm = algorithm
 
         self.w = [] #weights
         self.a = [] #activations (value at unit only for hidden and output)
@@ -72,8 +73,10 @@ class Net():
                 if self.debug:
                     print(out)
                 outputs.append(out)
-                # w_update.append(self.backPropagate(target))
-                w_update.append(self.refreshNeuralPathways(out, target))
+                if self.algorithm == 'bp':
+                    w_update.append(self.backPropagate(target))
+                elif self.algorithm == 'npr':
+                    w_update.append(self.refreshNeuralPathways(out, target))
                 # if epoch == 0:
                 #     # w_update = self.backPropagate(target, i, 0) #No delta_w(n-1) on first iteration
                 #     w_update.append(self.backPropagate(target)) #No delta_w(n-1) on first iteration
@@ -155,6 +158,7 @@ class Net():
         return self.a[-1] #Only return last layer (outut layer) activation
     
     def backPropagate(self, target, prev_weight_update=[]):
+        # utils.log('Training w bp', None)
         delta_out = []
         
         out = self.x[-1] #Last units are output
@@ -200,37 +204,67 @@ class Net():
         #     print(f'New weights {self.w[0]}')
     
     #Simple: weight only
+    # def refreshNeuralPathways(self, output, target):
+    #     for i, x in enumerate(zip(output, target)):
+    #         o = x[0]
+    #         t = x[1]
+    #         err = t-o #Use different loss func if needed
+    #         #update the entire pathway w err
+    #         #Find next weight to use
+    #         #reverse weights because we want to start w weights at ouput layer and work our way backwards (similar to backProp)
+    #         w_reversed = copy.deepcopy(self.w)
+    #         w_reversed.reverse()
+
+    #         a_reversed = copy.deepcopy(self.a)
+    #         a_reversed.reverse()
+    #         # utils.log('a_reversed', a_reversed)
+    #         curr_hop_id = i
+    #         # print(i)
+
+    #         """
+    #             unit_input_activations = a_reversed[layer] #From this unit's persepective looking at activations from the prev layers that feed into it
+    #             a_reversed includes output activations, should we not skip the very first one (last one before you reverse)
+    #         """
+    #         for layer, _ in enumerate(w_reversed):
+    #             # print(layer)
+    #             unit_weights = w_reversed[layer][curr_hop_id] 
+    #             # utils.log('unit_input_activations', unit_input_activations)
+    #             #Get the strongest weight (Weight most responsible for the err)
+    #             strongest_weight = max(unit_weights[:-1]) #Ignore last weight because it is bias (TODO: thinks about how else you want to handle bias weights - maybe just ignoring them isn't the best for best performance)
+    #             next_hop_id = unit_weights.index(strongest_weight) 
+    #             # unit_weights[next_hop_id] += err #update strongest  
+    #             # w_reversed[layer][curr_hop_id][next_hop_id] += self.eta*err*unit_input_activations[next_hop_id] #Try w and w/o unit_input_activation (xji  in T4.5 from the book)
+    #             w_reversed[layer][curr_hop_id][next_hop_id] += self.eta*err #Try w and w/o unit_input_activation (xji  in T4.5 from the book)
+    #             curr_hop_id = next_hop_id
+        
+    #     w_reversed.reverse() #Reverse back to feedForward order
+    #     self.w = copy.deepcopy(w_reversed)
+
+#Simpl: weights only
     def refreshNeuralPathways(self, output, target):
+        # utils.log('Training w rpr', None )
         for i, x in enumerate(zip(output, target)):
             o = x[0]
             t = x[1]
             err = t-o #Use different loss func if needed
-            #update the entire pathway w err
-            #Find next weight to use
-            #reverse weights because we want to start w weights at ouput layer and work our way backwards (similar to backProp)
-            w_reversed = copy.deepcopy(self.w)
-            w_reversed.reverse()
-
-            a_reversed = copy.deepcopy(self.a)
-            a_reversed.reverse()
-            # utils.log('a_reversed', a_reversed)
-            curr_hop_id = i
-            # print(i)
-            for layer, _ in enumerate(w_reversed):
-                # print(layer)
-                unit_weights = w_reversed[layer][curr_hop_id] 
+            """
                 unit_input_activations = a_reversed[layer] #From this unit's persepective looking at activations from the prev layers that feed into it
+                a_reversed includes output activations, should we not skip the very first one (last one before you reverse)
+            """
+            # for i in range( len(wordList) - 1, -1, -1) :
+            #     print(wordList[i])
+            curr_hop_id = i
+            for layer in range(len(self.w)-1, -1, -1): #Loop backwards
+                # print(layer)
+                unit_weights = self.w[layer][curr_hop_id] 
                 # utils.log('unit_input_activations', unit_input_activations)
                 #Get the strongest weight (Weight most responsible for the err)
                 strongest_weight = max(unit_weights[:-1]) #Ignore last weight because it is bias (TODO: thinks about how else you want to handle bias weights - maybe just ignoring them isn't the best for best performance)
                 next_hop_id = unit_weights.index(strongest_weight) 
                 # unit_weights[next_hop_id] += err #update strongest  
                 # w_reversed[layer][curr_hop_id][next_hop_id] += self.eta*err*unit_input_activations[next_hop_id] #Try w and w/o unit_input_activation (xji  in T4.5 from the book)
-                w_reversed[layer][curr_hop_id][next_hop_id] += self.eta*err #Try w and w/o unit_input_activation (xji  in T4.5 from the book)
+                self.w[layer][curr_hop_id][next_hop_id] += self.eta*err #Try w and w/o unit_input_activation (xji  in T4.5 from the book)
                 curr_hop_id = next_hop_id
-        
-        w_reversed.reverse() #Reverse back to feedForward order
-        self.w = copy.deepcopy(w_reversed)
 
 
 
