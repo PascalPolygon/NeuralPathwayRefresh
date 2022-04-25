@@ -70,6 +70,8 @@ class Net():
             # outputs = self.tune_weights(inputs, targets)
             for i, (input, target) in enumerate(zip(inputs, targets)):
                 out = self.feedForward(input)
+                # print('x')
+                # print(self.x)
                 if self.debug:
                     print(out)
                 outputs.append(out)
@@ -241,30 +243,67 @@ class Net():
     #     self.w = copy.deepcopy(w_reversed)
 
 #Simpl: weights only
+    # def refreshNeuralPathways(self, output, target):
+    #     # utils.log('Training w rpr', None )
+    #     for i, x in enumerate(zip(output, target)):
+    #         o = x[0]
+    #         t = x[1]
+    #         err = t-o #Use different loss func if needed
+    #         delta_out = o*(1-o)*(t-o)
+    #         """
+    #             unit_input_activations = a_reversed[layer] #From this unit's persepective looking at activations from the prev layers that feed into it
+    #             a_reversed includes output activations, should we not skip the very first one (last one before you reverse)
+    #         """
+    #         # for i in range( len(wordList) - 1, -1, -1) :
+    #         #     print(wordList[i])
+    #         hiddenUnits = self.x[1:-1] #Exclude input and output layers
+    #         curr_conn_id = i
+    #         for layer in range(len(self.w)-1, -1, -1): #Loop backwards
+    #             # print(layer)
+    #             unit_weights = self.w[layer][curr_conn_id] 
+    #             # utils.log('unit_input_activations', unit_input_activations)
+    #             #Get the strongest weight (Weight most responsible for the err)
+    #             strongest_weight = max(unit_weights[:-1]) #Ignore last weight because it is bias (TODO: thinks about how else you want to handle bias weights - maybe just ignoring them isn't the best for best performance)
+    #             next_conn_id = unit_weights.index(strongest_weight) 
+
+    #             sensitivity = strongest_weight*delta_out
+    #             o_h = hiddenUnits[next_conn_id]
+    #             delta = o_h*(1-o_h)*sensitivity #GD
+    #             # unit_weights[next_hop_id] += err #update strongest  
+    #             # w_reversed[layer][curr_hop_id][next_hop_id] += self.eta*err*unit_input_activations[next_hop_id] #Try w and w/o unit_input_activation (xji  in T4.5 from the book)
+    #             self.w[layer][curr_conn_id][next_conn_id] += self.eta*delta*hiddenUnits[next_conn_id]
+    #             # self.w[layer][curr_hop_id][next_hop_id] += self.eta*err #Try w and w/o unit_input_activation (xji  in T4.5 from the book)
+    #             curr_conn_id = next_conn_id
+
     def refreshNeuralPathways(self, output, target):
         # utils.log('Training w rpr', None )
+        updates_ref = []
+        updates = []
+        units = self.x[1:] #Exclude input layer of unit output values
+
         for i, x in enumerate(zip(output, target)):
             o = x[0]
             t = x[1]
-            err = t-o #Use different loss func if needed
-            """
-                unit_input_activations = a_reversed[layer] #From this unit's persepective looking at activations from the prev layers that feed into it
-                a_reversed includes output activations, should we not skip the very first one (last one before you reverse)
-            """
-            # for i in range( len(wordList) - 1, -1, -1) :
-            #     print(wordList[i])
-            curr_hop_id = i
+            
+            delta = o*(1-o)*(t-o)
+
+            curr_conn_id = i
             for layer in range(len(self.w)-1, -1, -1): #Loop backwards
-                # print(layer)
-                unit_weights = self.w[layer][curr_hop_id] 
-                # utils.log('unit_input_activations', unit_input_activations)
-                #Get the strongest weight (Weight most responsible for the err)
+                unit_weights = self.w[layer][curr_conn_id] 
                 strongest_weight = max(unit_weights[:-1]) #Ignore last weight because it is bias (TODO: thinks about how else you want to handle bias weights - maybe just ignoring them isn't the best for best performance)
-                next_hop_id = unit_weights.index(strongest_weight) 
-                # unit_weights[next_hop_id] += err #update strongest  
-                # w_reversed[layer][curr_hop_id][next_hop_id] += self.eta*err*unit_input_activations[next_hop_id] #Try w and w/o unit_input_activation (xji  in T4.5 from the book)
-                self.w[layer][curr_hop_id][next_hop_id] += self.eta*err #Try w and w/o unit_input_activation (xji  in T4.5 from the book)
-                curr_hop_id = next_hop_id
+                next_conn_id = unit_weights.index(strongest_weight) 
+
+                sensitivity = strongest_weight*delta #Sensitivity of strongest weight
+                o_h = units[layer][next_conn_id] #Hidden unit that stronges weight leads to
+                delta = o_h*(1-o_h)*sensitivity #GD
+                updates.append(self.eta*delta*o_h) #Store the update
+                updates_ref.append([layer, curr_conn_id, next_conn_id]) #Store references of weights to udpates
+                curr_conn_id = next_conn_id
+
+        #Apply updates (only to weights of ids)
+        for update, update_ref in zip(updates, updates_ref):
+            self.w[update_ref[0]][update_ref[1]][update_ref[2]] += update
+
 
 
 
