@@ -68,19 +68,19 @@ if __name__ == '__main__':
     net_arch = [n_in] + hidden_arch + [n_out]
     utils.log('net_arch', net_arch)
     utils.log(f'Training with  {opt.algorithm}', None)
-    net = Net(net_arch, lr=float(opt.lr), maxEpoch=int(opt.max_iter), momentum=float(opt.momentum), verbose=bool(opt.verbose), debug=opt.debug, algorithm=opt.algorithm)
+    net = Net(net_arch, lr=float(opt.lr), maxEpoch=int(opt.max_iter), momentum=float(opt.momentum), verbose=bool(opt.verbose), debug=opt.debug, algorithm=opt.algorithm, pr=float(opt.pr))
     
-    for w in net.w:
-        print(w)
+    # for w in net.w:
+    #     print(w)
     
-    for a in (net.a):
-        print(a)
+    # for a in (net.a):
+    #     print(a)
 
     print('Training...')
     start = time.time()
     net.train(inputs, outputs)
     end = time.time()
-    print(f'Trained in {(end - start)/1000} ms')
+    print(f'Trained in {(end - start)} (s)')
 
     # for w in net.w:
     #     print(w)
@@ -104,6 +104,8 @@ if __name__ == '__main__':
     #     print('-'*50)
 
     plt.plot(net.lossHistory)
+    plt.xlabel('iterations')
+    plt.ylabel('loss')
     plt.show()
 
     # #calculate accuracy

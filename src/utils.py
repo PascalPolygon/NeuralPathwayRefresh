@@ -42,6 +42,7 @@ class Utils:
         parser.add_argument("--debug", action="store_true")
         parser.add_argument("--loss_thresh", help="Maximum difference between loss of bestweights vs training weights on validation data", default=0.1)
         parser.add_argument("--algorithm", help="Training algorithm to use: One of [bp, npr]", default="bp")
+        parser.add_argument("--pr", help="Probability with which strongest weight will be selected", default=0.8)
         
         opt = parser.parse_args()
         if opt.verbose == 'False': 

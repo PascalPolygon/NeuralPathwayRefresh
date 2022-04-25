@@ -6,7 +6,7 @@ import copy
 
 utils = Utils()
 class Net():
-    def __init__(self, n_neurons, lr=0.01, maxEpoch = 100, momentum = 0, verbose=True, debug=False, algorithm='bp'):
+    def __init__(self, n_neurons, lr=0.01, maxEpoch = 100, momentum = 0, verbose=True, debug=False, algorithm='bp', pr=0.8):
         self.n_neurons = n_neurons
         self.verbose = verbose
         self.eta = lr
@@ -14,6 +14,7 @@ class Net():
         self.alpha = momentum #Momentum hyper parametere
         self.debug = debug
         self.algorithm = algorithm
+        self.pr = pr
 
         self.w = [] #weights
         self.a = [] #activations (value at unit only for hidden and output)
@@ -288,13 +289,24 @@ class Net():
             delta = o*(1-o)*(t-o)
 
             curr_conn_id = i
-            for layer in range(len(self.w)-1, -1, -1): #Loop backwards
-                unit_weights = self.w[layer][curr_conn_id] 
-                strongest_weight = max(unit_weights[:-1]) #Ignore last weight because it is bias (TODO: thinks about how else you want to handle bias weights - maybe just ignoring them isn't the best for best performance)
-                next_conn_id = unit_weights.index(strongest_weight) 
+            # utils.log('len(w)', len(self.w))
+            # utils.log('len(units)', len(units))
+            # utils.log('self.w', self.w)
+            for layer in range(len(self.w)-1, 0, -1): #Loop backwards
+                # unit_weights = self.w[layer][curr_conn_id][:-1] #Ignore last weight because it is bias (TODO: thinks about how else you want to handle bias weights - maybe just ignoring them isn't the best for best performance)
+                if curr_conn_id > len(self.w[layer])-1:
+                    break #Bias was updated in prev interation (dead end)
+                
+                unit_weights = self.w[layer][curr_conn_id]
+                strongest_weight = max(unit_weights)
+                if random.random() < self.pr:
+                    next_conn_id = unit_weights.index(strongest_weight) 
+                else:
+                    next_conn_id = random.randint(0, len(unit_weights)-1)
 
                 sensitivity = strongest_weight*delta #Sensitivity of strongest weight
-                o_h = units[layer][next_conn_id] #Hidden unit that stronges weight leads to
+
+                o_h = units[layer-1][next_conn_id] #Hidden unit that stronges weight leads to (-1 because we want the units not this layer, but the next one)
                 delta = o_h*(1-o_h)*sensitivity #GD
                 updates.append(self.eta*delta*o_h) #Store the update
                 updates_ref.append([layer, curr_conn_id, next_conn_id]) #Store references of weights to udpates
@@ -304,6 +316,53 @@ class Net():
         for update, update_ref in zip(updates, updates_ref):
             self.w[update_ref[0]][update_ref[1]][update_ref[2]] += update
 
+    #Use strongest connection
+    # def refreshNeuralPathways(self, output, target):
+    #     # utils.log('Training w rpr', None )
+    #     updates_ref = []
+    #     updates = []
+    #     units = self.x[1:] #Exclude input layer of unit output values
 
+    #     for i, x in enumerate(zip(output, target)):
+    #         o = x[0]
+    #         t = x[1]
+            
+    #         delta = o*(1-o)*(t-o)
 
+    #         curr_conn_id = i
+    #         # utils.log('len(w)', len(self.w))
+    #         # utils.log('len(units)', len(units))
+    #         # utils.log('self.w', self.w)
+    #         for layer in range(len(self.w)-1, 0, -1): #Loop backwards
+    #             # unit_weights = self.w[layer][curr_conn_id][:-1] #Ignore last weight because it is bias (TODO: thinks about how else you want to handle bias weights - maybe just ignoring them isn't the best for best performance)
+    #             if curr_conn_id > len(self.w[layer])-1:
+    #                 break #Bias was updated in prev interation (dead end)
+                
+    #             # for j, w in enumerate(self.w):
+    #             #     utils.log(f'w[{j}]', w)
+    #             # utils.log('curr_conn_id', curr_conn_id)
+    #             # utils.log('layer', layer)
+
+    #             unit_weights = self.w[layer][curr_conn_id]
+    #             # strongest_weight = max(unit_weights)
+    #             #Find strongest connection not just srongest weight
+    #             in_activations = units[layer-1]
+    #             # next_conn_id = unit_weights.index(strongest_weight) 
+    #             connection_strengths = []
+    #             for a, w in zip(in_activations, unit_weights):
+    #                 connection_strengths.append(a*w)
+
+    #             strongest_conn = max(connection_strengths)
+    #             next_conn_id = connection_strengths.index(strongest_conn)
+                
+    #             sensitivity = unit_weights[next_conn_id]*delta #Sensitivity of strongest weight
+    #             o_h = units[layer-1][next_conn_id] #Hidden unit that stronges weight leads to (-1 because we want the units not this layer, but the next one)
+    #             delta = o_h*(1-o_h)*sensitivity #GD
+    #             updates.append(self.eta*delta*o_h) #Store the update
+    #             updates_ref.append([layer, curr_conn_id, next_conn_id]) #Store references of weights to udpates
+    #             curr_conn_id = next_conn_id
+
+    #     #Apply updates (only to weights of ids)
+    #     for update, update_ref in zip(updates, updates_ref):
+    #         self.w[update_ref[0]][update_ref[1]][update_ref[2]] += update
 
