@@ -3,7 +3,7 @@ import inspect
 from net import Net
 from utils import Utils
 import copy
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import time
 
 utils = Utils()
@@ -82,31 +82,31 @@ if __name__ == '__main__':
     end = time.time()
     print(f'Trained in {(end - start)} (s)')
 
-    # for w in net.w:
-    #     print(w)
-    #     print('-'*50)
-    # print('reversed')
-    # w_reversed = copy.deepcopy(net.w)
-    # w_reversed.reverse()
-    # # print(w_reversed)
-    # for w in w_reversed:
-    #     print(w)
-    #     print('-'*50)
-    
-    # print('activations')
-    # for a in net.a:
-    #     print(a)
-    #     print('-'*50)
-    
-    # print('Unit values')
-    # for x in net.x:
-    #     print(x)
-    #     print('-'*50)
+# for w in net.w:
+#     print(w)
+#     print('-'*50)
+# print('reversed')
+# w_reversed = copy.deepcopy(net.w)
+# w_reversed.reverse()
+# # print(w_reversed)
+# for w in w_reversed:
+#     print(w)
+#     print('-'*50)
 
-    plt.plot(net.lossHistory)
-    plt.xlabel('iterations')
-    plt.ylabel('loss')
-    plt.show()
+# print('activations')
+# for a in net.a:
+#     print(a)
+#     print('-'*50)
+
+# print('Unit values')
+# for x in net.x:
+#     print(x)
+#     print('-'*50)
+
+    # plt.plot(net.lossHistory)
+    # plt.xlabel('iterations')
+    # plt.ylabel('loss')
+    # plt.show()
 
     # #calculate accuracy
     acc = calculate_accuracy(inputs, outputs)

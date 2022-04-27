@@ -35,7 +35,7 @@ class Utils:
         parser.add_argument("--max_iter", help="max training iterations", default=500)
         parser.add_argument("--lr", help="learning rate", default=0.1)
         parser.add_argument("--momentum", help="momentum hyperparameter", default=0)
-        parser.add_argument("--hidden_units", help="number of hidden units", default=3)
+        parser.add_argument("--hidden_units", help="number of hidden units", default=4)
         parser.add_argument("--validation", help="percentage of data to keep for validation", default=0)
         parser.add_argument("--hidden_arch", help="customer hidden layers architecture. Format: #units-#units-#units (e.g. 1-3-2)", default='3')
         parser.add_argument("--verbose", help="verbose", default=False)

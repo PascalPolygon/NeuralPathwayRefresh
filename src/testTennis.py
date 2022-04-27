@@ -2,6 +2,7 @@ import os
 import inspect
 from net import Net
 from utils import Utils
+import time
 
 utils = Utils()
 
@@ -99,6 +100,8 @@ def get_data(path):
     return process_tennis_data(inputs, outputs)
 
 if __name__ == '__main__':
+    # for max_iter in range(0, 500, 50):
+    utils.log('max_iter', max_iter)
     opt = utils.arg_parse() # get hyper-parameters
     hidden_arch = utils.get_hidden_arch(opt.hidden_arch) #forma user-defined hidden architecture
     
@@ -108,9 +111,14 @@ if __name__ == '__main__':
     n_out = len(outputs[0])
     net_arch = [n_in] + hidden_arch + [n_out]
     utils.log('net_arch', net_arch)
-    net = Net(net_arch, lr=float(opt.lr), maxEpoch=int(opt.max_iter), momentum=float(opt.momentum), verbose=bool(opt.verbose))
+    # net = Net(net_arch, lr=float(opt.lr), maxEpoch=int(opt.max_iter), momentum=float(opt.momentum), verbose=bool(opt.verbose), algorithm=opt.algorithm, pr=float(opt.pr))
+    net = Net(net_arch, lr=float(opt.lr), maxEpoch=max_iter, momentum=float(opt.momentum), verbose=bool(opt.verbose), algorithm=opt.algorithm, pr=float(opt.pr))
+
     print('Training...')
+    start = time.time()
     net.train(inputs, outputs)
+    end = time.time()
+    print(f'Trained in {(end - start)} (s)')
 
     # plt.plot(net.lossHistory)
     # plt.show()
@@ -118,7 +126,7 @@ if __name__ == '__main__':
     #calculate accuracy
     acc = calculate_accuracy(inputs, outputs)
     utils.log('Train Acc', acc)
-    print('-'*50)
     inputs, outputs = get_data(TENNIS_TEST_FILE)
     acc = calculate_accuracy(inputs, outputs)
     utils.log('Test Acc', acc)
+    print('-'*50)
